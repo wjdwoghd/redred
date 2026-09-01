@@ -218,40 +218,40 @@ VALUES
     (18, 11, 7, 1, 'REJECTED', '출장 일정과 방문 목적을 구체화해 주세요.');
 
 -- 7. 첨부파일 메타데이터 10건
--- 실제 파일은 별도로 /var/www/html/uploads/ 경로에 배치해야 합니다.
+-- 실제 파일은 별도로 server/uploads/ 경로에 배치해야 합니다.
 INSERT INTO attachments
     (attachment_id, related_type, related_id, uploader_id,
      original_name, stored_name, file_path, content_type, file_size, created_at)
 VALUES
     (1, 'NOTICE', 2, 2, '2026_정보보안교육_안내.pdf',
-     'notice_20260824_001.pdf', '/var/www/html/uploads/notice_20260824_001.pdf',
+     'notice_20260824_001.pdf', 'uploads/notice_20260824_001.pdf',
      'application/pdf', 284216, '2026-08-24 09:15:00'),
     (2, 'NOTICE', 7, 6, 'Cortis_브랜드_가이드.pdf',
-     'notice_20260825_002.pdf', '/var/www/html/uploads/notice_20260825_002.pdf',
+     'notice_20260825_002.pdf', 'uploads/notice_20260825_002.pdf',
      'application/pdf', 1524860, '2026-08-25 11:20:00'),
     (3, 'NOTICE', 10, 2, '추석연휴_비상연락망.xlsx',
-     'notice_20260826_003.xlsx', '/var/www/html/uploads/notice_20260826_003.xlsx',
+     'notice_20260826_003.xlsx', 'uploads/notice_20260826_003.xlsx',
      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 48215, '2026-08-26 14:10:00'),
     (4, 'TASK', 6, 11, '비품재고_조사표.xlsx',
-     'task_20260825_001.xlsx', '/var/www/html/uploads/task_20260825_001.xlsx',
+     'task_20260825_001.xlsx', 'uploads/task_20260825_001.xlsx',
      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 36570, '2026-08-25 16:30:00'),
     (5, 'TASK', 13, 17, '신규서비스_기획안_v1.docx',
-     'task_20260825_002.docx', '/var/www/html/uploads/task_20260825_002.docx',
+     'task_20260825_002.docx', 'uploads/task_20260825_002.docx',
      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 91642, '2026-08-25 17:05:00'),
     (6, 'TASK', 17, 20, '포털_메인화면_시안.png',
-     'task_20260826_003.png', '/var/www/html/uploads/task_20260826_003.png',
+     'task_20260826_003.png', 'uploads/task_20260826_003.png',
      'image/png', 836224, '2026-08-26 10:40:00'),
     (7, 'APPROVAL', 3, 11, '사무용의자_견적서.pdf',
-     'approval_20260820_001.pdf', '/var/www/html/uploads/approval_20260820_001.pdf',
+     'approval_20260820_001.pdf', 'uploads/approval_20260820_001.pdf',
      'application/pdf', 194350, '2026-08-20 13:25:00'),
     (8, 'APPROVAL', 5, 14, '회계프로그램_갱신견적.pdf',
-     'approval_20260824_002.pdf', '/var/www/html/uploads/approval_20260824_002.pdf',
+     'approval_20260824_002.pdf', 'uploads/approval_20260824_002.pdf',
      'application/pdf', 127884, '2026-08-24 15:10:00'),
     (9, 'APPROVAL', 9, 20, '디자인SW_구매견적서.pdf',
-     'approval_20260822_003.pdf', '/var/www/html/uploads/approval_20260822_003.pdf',
+     'approval_20260822_003.pdf', 'uploads/approval_20260822_003.pdf',
      'application/pdf', 220415, '2026-08-22 10:45:00'),
     (10, 'APPROVAL', 11, 23, '부산출장_일정표.docx',
-     'approval_20260826_004.docx', '/var/www/html/uploads/approval_20260826_004.docx',
+     'approval_20260826_004.docx', 'uploads/approval_20260826_004.docx',
      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 53680, '2026-08-26 18:20:00');
 
 -- 8. 로그인 감사 기록 40건

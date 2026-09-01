@@ -13,7 +13,7 @@
 PowerShell에서 다음 명령을 실행합니다.
 
 ```powershell
-cd C:\redred\ai_scanner_dashboard
+cd C:\redred\dashboard
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
@@ -88,7 +88,7 @@ get_report_artifacts(scan_id)
 ## 테스트
 
 ```powershell
-cd C:\redred\ai_scanner_dashboard
+cd C:\redred\dashboard
 python -m unittest discover -s tests -v
 ```
 
@@ -96,7 +96,7 @@ python -m unittest discover -s tests -v
 
 ## 기존 서버와 분리
 
-모든 코드는 `ai_scanner_dashboard` 내부에 있습니다. 상위의 PHP·HTML·CSS·JavaScript·SQL·DB 설정을 import하거나 수정하지 않으며, 취약 서버를 실행·중지·스캔하지 않습니다.
+모든 대시보드 코드는 `dashboard` 내부에 있습니다. 형제 디렉터리인 `ai_scanner`와 명시적으로 연동하며, `server` 및 `database` 코드를 import하거나 수정하지 않습니다.
 ## Active-scan result integration
 
 Filesystem mode is read-only. The adapter selects the newest `active-scan-*`

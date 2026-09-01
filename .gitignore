@@ -1,8 +1,8 @@
 # Runtime uploads may contain untrusted or executable files.
-/uploads/
+/server/uploads/
 
 # Local database credentials and environment variables.
-/db.php
+/database/db.php
 .env
 .env.*
 !.env.example
@@ -10,8 +10,11 @@
 # Runtime logs.
 *.log
 
+# Repository-level Python test cache.
+/.pytest_cache/
+
 # Installed PHP dependencies.
-/vendor/
+/server/vendor/
 
 # Editor and operating-system metadata.
 .idea/

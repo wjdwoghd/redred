@@ -8,7 +8,8 @@ session_set_cookie_params([
 ]);
 session_start();
 
-require_once __DIR__ . "/db.php";
+require_once __DIR__ . '/../database/db.php';
+require_once __DIR__ . '/attachment_path.php';
 
 
 /*
@@ -79,6 +80,7 @@ function save_notice_attachment(
 
     $stored_name = uniqid('notice_', true) . ($ext ? '.' . $ext : '');
 
+    $relative_path = 'uploads/notices/' . $stored_name;
     $upload_dir = __DIR__ . '/uploads/notices/';
 
     if (!is_dir($upload_dir)) {
@@ -121,7 +123,7 @@ function save_notice_attachment(
         $uploader_id,
         $original_name,
         $stored_name,
-        $file_path,
+        $relative_path,
         $content_type,
         $file_size
     );
@@ -158,8 +160,9 @@ function delete_notice_attachments(mysqli $conn, string $notice_id): void
     }
 
     while ($row = $result->fetch_assoc()) {
-        if ($row['file_path'] && file_exists($row['file_path'])) {
-            unlink($row['file_path']);
+        $attachment_path = resolve_attachment_path($row['file_path']);
+        if ($attachment_path && file_exists($attachment_path)) {
+            unlink($attachment_path);
         }
     }
 

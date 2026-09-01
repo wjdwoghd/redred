@@ -13,7 +13,7 @@ session_start();
 
 require_once __DIR__ . '/department_data.php';
 require_once __DIR__ . '/department_layout.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../database/db.php';
 
 $departmentKey = $_GET['dept'] ?? '';
 

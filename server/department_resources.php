@@ -13,7 +13,7 @@ session_start();
 
 require_once __DIR__ . '/department_data.php';
 require_once __DIR__ . '/department_layout.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../database/db.php';
 
 $departmentKey = $_GET['dept'] ?? '';
 
@@ -51,6 +51,7 @@ if ($submitted) {
             $uploadError = '해당 파일 형식은 업로드할 수 없습니다.';
         } else {
             $storedName = uniqid('department_', true) . ($ext ? '.' . $ext : '');
+            $relativePath = 'uploads/departments/' . $departmentKey . '/' . $storedName;
             $uploadDir = __DIR__ . '/uploads/departments/' . $departmentKey . '/';
 
             if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true)) {
@@ -73,7 +74,7 @@ if ($submitted) {
                         }
                         $uploadError = '자료 등록 중 시스템 오류가 발생했습니다. DB 오류: ' . $conn->error . ' / 저장 경로: ' . $filePath;
                     } else {
-                        $stmt->bind_param('sisissssi', $relatedType, $departmentId, $resourceTitle, $uploaderId, $originalName, $storedName, $filePath, $contentType, $fileSize);
+                        $stmt->bind_param('sisissssi', $relatedType, $departmentId, $resourceTitle, $uploaderId, $originalName, $storedName, $relativePath, $contentType, $fileSize);
 
                         if ($stmt->execute()) {
                             $uploadedUrl = 'uploads/departments/' . $departmentKey . '/' . $storedName;

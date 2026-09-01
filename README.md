@@ -681,7 +681,7 @@ AI Scanner는 자동 분석 결과와 보안담당자가 제공한 증적을 바
 
 ## 프로젝트 구조
 
-AI Scanner 코드 통합 전 회의를 기준으로 다음과 같은 상위 구조를 사용하기로 했습니다.
+서버, 대시보드, 스캐너, 데이터베이스를 다음과 같이 분리합니다.
 
 ```text
 redred/
@@ -696,24 +696,36 @@ redred/
 │   ├── upload.php              # 파일 업로드
 │   ├── download.php            # 파일 다운로드
 │   ├── delete.php              # 파일 삭제
-│   ├── uploads/                # 업로드 파일 저장 경로
-│   └── db/                     # DB 연결 및 관련 설정
+│   ├── attachment_path.php      # 기존/신규 첨부파일 경로 호환 처리
+│   └── uploads/                # 업로드 파일 저장 경로
 │
-└── AI_Scanner/                 # OpenAI API 기반 AI Scanner
-    ├── main.py                 # 실행 진입점
-    ├── .env.example            # 환경 변수 예시
-    ├── scanner/                # 페이지 및 요청 분석
-    ├── analyzer/               # AI 기반 취약점 후보 분석
-    ├── evidence/               # 수동 검증 증적 관리
-    ├── reports/                # 보고서 생성 기능
-    └── results/                # 스캔별 결과 및 PDF
-        └── active-scan-{date}/
-            ├── diagnostic_guide.pdf
-            ├── final_report.pdf
-            └── secure_coding_guide.pdf
+├── dashboard/                  # Streamlit 진단 대시보드
+│   ├── app.py                  # 대시보드 진입점
+│   └── requirements.txt        # 대시보드 의존성
+│
+├── ai_scanner/                 # OpenAI API 기반 AI Scanner
+│   ├── main.py                 # 스캐너 진입점
+│   ├── prompts/                # AI 프롬프트
+│   └── results/                # 스캔 결과 및 PDF
+│
+└── database/                   # MariaDB 스키마와 연결 설정
+    ├── db.php                  # 로컬 DB 연결 정보(커밋 제외)
+    ├── company_portal_full.sql
+    ├── company_portal_structure.sql
+    └── company_portal_seed.sql
 ```
 
-> 실제 AI Scanner 코드를 통합한 후 세부 디렉터리와 파일명은 변경될 수 있습니다.
+개발 서버와 대시보드는 저장소 루트에서 다음처럼 실행할 수 있습니다.
+
+```powershell
+C:\xampp\php\php.exe -S 127.0.0.1:8079 -t server
+```
+
+```powershell
+cd dashboard
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
+```
 
 <br>
 

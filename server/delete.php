@@ -21,7 +21,8 @@ if (trim((string) $attachment_id) === '') {
     exit;
 }
 
-require_once "db.php";
+require_once __DIR__ . '/../database/db.php';
+require_once __DIR__ . '/attachment_path.php';
 
 // 3. 파일 경로 조회
 $sql = "SELECT file_path FROM attachments WHERE attachment_id = $attachment_id";
@@ -35,7 +36,7 @@ if (!$select_result) {
 $result = $select_result->fetch_assoc();
 
 if ($result) {
-    $file_path = $result['file_path'];
+    $file_path = resolve_attachment_path($result['file_path']);
 
     // 4. 실제 파일 삭제
     if (file_exists($file_path)) {

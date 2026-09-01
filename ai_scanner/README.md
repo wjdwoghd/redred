@@ -106,7 +106,7 @@ XSS와 File Upload는 요청 하나만으로 실행/접근을 확정하지 않�
 
 ## DB 스키마 확인
 
-현재 PHP가 사용하는 `attachments.related_type='RESOURCE'/'DEPARTMENT'`와 `attachments.title` 컬럼은 `database/company_portal_before_stage8_20260827_202530.sql`과 일치합니다. `database/company_portal_structure.sql`은 `NOTICE/TASK/APPROVAL`만 허용하고 `title`이 없어 현재 PHP와 불일치합니다. DB 파일은 이번 통합에서 임의 수정하지 않았습니다.
+데이터베이스 스키마와 초기 데이터는 저장소 루트의 `database/`에 있습니다. PHP 서버의 실제 쿼리와 스키마가 일치하는지는 배포 전에 `database/company_portal_full.sql`을 기준으로 확인하세요.
 
 ## 테스트
 

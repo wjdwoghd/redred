@@ -21,7 +21,8 @@ if ($attachment_id <= 0) {
     exit;
 }
 
-require_once "db.php";
+require_once __DIR__ . '/../database/db.php';
+require_once __DIR__ . '/attachment_path.php';
 
 // 3. DB 조회 (attachments 테이블)
 $sql = "SELECT original_name, stored_name, file_path, content_type FROM attachments WHERE attachment_id = ?";
@@ -47,7 +48,7 @@ if (!$result) {
 }
 
 $original_name = $result['original_name'];
-$file_path = $result['file_path']; // 저장된 전체 경로 (예: uploads/resource/xxx.pdf)
+$file_path = resolve_attachment_path($result['file_path']);
 
 // 4. 파일 존재 유무 검증
 if (!file_exists($file_path)) {

@@ -14,7 +14,7 @@ if (!isset($_SESSION["employee_id"])) {
     exit;
 }
 
-require_once "db.php";
+require_once __DIR__ . '/../database/db.php';
 
 $logged_in_user_id = $_SESSION["employee_id"];
 
@@ -106,6 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             /* 폴더 생성에 성공했거나 이미 존재하는 경우 */
             if ($error === "") {
 
+                $relative_path = 'uploads/resource/' . $stored_name;
                 $file_path = $upload_dir . $stored_name;
 
 
@@ -149,7 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         $uploader_id,
                         $original_name,
                         $stored_name,
-                        $file_path,
+                        $relative_path,
                         $content_type,
                         $file_size
                     );

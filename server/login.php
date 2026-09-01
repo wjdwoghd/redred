@@ -7,7 +7,7 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
-require_once "db.php";
+require_once __DIR__ . '/../database/db.php';
 
 $error = "";
 

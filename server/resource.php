@@ -9,7 +9,7 @@ session_set_cookie_params([
 ]);
 session_start();
 
-require_once "db.php";
+require_once __DIR__ . '/../database/db.php';
 
 
 /* 로그인 확인 */

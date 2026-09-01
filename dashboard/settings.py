@@ -49,7 +49,7 @@ class ScannerSettings:
             configured_results = str(default_results if mode == "active" else root / "sample_results")
         configured_target = os.getenv("SCANNER_DEFAULT_TARGET_URL", "").strip()
         if not configured_target and mode == "mock":
-            configured_target = "http://127.0.0.1/REDRED/login.php"
+            configured_target = "http://127.0.0.1:8079/login.php"
         scanner_mode = os.getenv("SCANNER_ANALYSIS_MODE", "auto").strip().lower()
         if scanner_mode not in {"auto", "ai", "rules"}:
             scanner_mode = "auto"
