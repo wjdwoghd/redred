@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from adapters import (
     CliScannerAdapter,
+    ActiveScannerAdapter,
     FilesystemScannerAdapter,
     MockScannerAdapter,
     RestScannerAdapter,
@@ -51,7 +52,8 @@ class ScannerService:
 
     def _normalize(self, raw: Mapping[str, Any], scan_id: str | None = None) -> ScanResult:
         if isinstance(self.adapter, FilesystemScannerAdapter):
-            bundle_raw, raw_path, reports, evidence = self.adapter.load_bundle(scan_id)
+            selected_scan_id = scan_id or getattr(self.adapter, "last_scan_id", None)
+            bundle_raw, raw_path, reports, evidence = self.adapter.load_bundle(selected_scan_id)
             return normalize_scan_result(
                 bundle_raw,
                 raw_result_path=raw_path,
@@ -78,6 +80,23 @@ class ScannerService:
             raise ScannerAdapterError("한 개 이상의 증적 파일이 필요합니다.")
         self.adapter.submit_review(scan_id, reviews, evidence)
 
+    def persist_review_state(
+        self,
+        scan_id: str,
+        reviews: Sequence[Mapping[str, Any]],
+        evidence: Sequence[Evidence],
+    ) -> None:
+        """Persist dashboard review input without starting reanalysis.
+
+        Filesystem mode writes the existing review schema/evidence files;
+        adapters such as Mock retain their previous in-memory behavior.
+        """
+        self.adapter.submit_review(scan_id, reviews, evidence)
+
+    def add_manual_finding(self, scan_id: str, finding: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Persist a reviewer-created Finding through the active adapter."""
+        return self.adapter.add_manual_finding(scan_id, finding)
+
     def run_reanalysis(self, scan_id: str) -> ScanResult:
         raw = self.adapter.run_reanalysis(scan_id)
         return self._normalize(raw, scan_id)
@@ -100,6 +119,14 @@ def create_scanner_service(settings: ScannerSettings) -> ScannerService:
     adapters: dict[str, ScannerAdapter] = {
         "mock": MockScannerAdapter(settings.mock_data_path),
         "filesystem": FilesystemScannerAdapter(settings.results_dir),
+        "active": ActiveScannerAdapter(
+            settings.results_dir,
+            project_dir=settings.scanner_project_dir,
+            analysis_mode=settings.scanner_analysis_mode,
+            scan_mode=settings.scanner_scan_mode,
+            cookie=settings.scanner_cookie,
+            timeout_seconds=settings.cli_timeout_seconds,
+        ),
         "cli": CliScannerAdapter(settings.cli_command),
         "rest": RestScannerAdapter(settings.api_base_url, settings.api_key),
         "tool": ToolScannerAdapter(),

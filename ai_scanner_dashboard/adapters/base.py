@@ -37,6 +37,10 @@ class ScannerAdapter(ABC):
     ) -> None:
         """Submit human review data to the scanner boundary."""
 
+    def add_manual_finding(self, scan_id: str, finding: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Persist a reviewer-created finding when the adapter supports it."""
+        raise ScannerAdapterError("이 연결 방식에서는 수동 Finding 추가를 지원하지 않습니다.")
+
     @abstractmethod
     def run_reanalysis(self, scan_id: str) -> Mapping[str, Any]:
         """Run or load the evidence-based reanalysis result."""

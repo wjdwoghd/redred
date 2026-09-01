@@ -12,6 +12,10 @@ from models import Finding, ScanResult
 
 SEVERITY_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]
 STATUS_LABELS = {
+    "CONFIRMED": "담당자 검증 완료 / 취약점 확인",
+    "FALSE_POSITIVE": "담당자 검증 완료 / 오탐",
+    "PENDING": "담당자 미검증 또는 추가 검증 필요",
+    "NEW_FINDING": "담당자 수동 발견",
     "unverified": "미검증",
     "verified": "검증 완료",
     "confirmed": "취약점 확정",
@@ -19,6 +23,13 @@ STATUS_LABELS = {
     "reanalysis_required": "재분석 필요",
     "unknown": "확인 필요",
 }
+
+
+def review_status_label(value: str | None) -> str:
+    """Render scanner review states consistently in the Dashboard."""
+    raw = str(value or "PENDING")
+    status = raw.upper()
+    return STATUS_LABELS.get(status, STATUS_LABELS.get(raw, status))
 
 
 @dataclass(frozen=True)
@@ -29,6 +40,8 @@ class DashboardMetrics:
     false_positives: int
     critical_high: int
     evidence_count: int
+    forms_discovered: int = 0
+    inputs_tested: int = 0
 
 
 def effective_severity(finding: Finding) -> str:
@@ -40,10 +53,12 @@ def compute_dashboard_metrics(scan: ScanResult, session_evidence_count: int = 0)
     return DashboardMetrics(
         scanned_pages=scan.scanned_pages,
         total_findings=len(scan.findings),
-        reviewed_findings=sum(item.review_status not in {"unverified", "unknown", ""} for item in scan.findings),
-        false_positives=sum(item.review_status == "false_positive" for item in scan.findings),
+        reviewed_findings=sum(item.review_status.lower() not in {"unverified", "unknown", "", "pending"} for item in scan.findings),
+        false_positives=sum(item.review_status.lower() == "false_positive" for item in scan.findings),
         critical_high=sum(effective_severity(item) in {"CRITICAL", "HIGH"} for item in scan.findings),
         evidence_count=len(evidence_ids) + session_evidence_count,
+        forms_discovered=scan.forms_discovered,
+        inputs_tested=scan.inputs_tested,
     )
 
 
@@ -56,10 +71,11 @@ def findings_frame(findings: list[Finding]) -> pd.DataFrame:
                 "URI": item.uri,
                 "Method": item.http_method or "-",
                 "Parameter": item.parameter or "-",
+                "source": "담당자 추가 발견" if item.finding_id.upper().startswith("NF-") or item.scanner_status.upper() == "MANUAL" else "자동 탐지",
                 "1차 위험도": item.initial_severity or "UNKNOWN",
                 "최종 위험도": item.final_severity or "판정 전",
                 "신뢰도": item.confidence,
-                "검토 상태": STATUS_LABELS.get(item.review_status, item.review_status),
+                "검토 상태": review_status_label(item.review_status),
                 "증적": len(item.evidence),
             }
             for item in findings

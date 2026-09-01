@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "scan_id": "scan-20260827-upload-001",
+  "capture_type": "synthetic_fixture",
+  "request": {
+    "method": "POST",
+    "url": "http://192.168.94.128/upload.php",
+    "path": "/upload.php",
+    "headers": {
+      "Host": "192.168.94.128",
+      "User-Agent": "REDRED-Training-Scanner/1.0",
+      "Content-Type": "multipart/form-data; boundary=----REDREDBoundary001",
+      "Accept": "application/json",
+      "Cookie": "PHPSESSID=demo-secret-session"
+    },
+    "parameters": {},
+    "body": "------REDREDBoundary001\r\nContent-Disposition: form-data; name=\"department\"\r\n\r\nmarketing\r\n------REDREDBoundary001\r\nContent-Disposition: form-data; name=\"file\"; filename=\"proof.php\"\r\nContent-Type: application/x-php\r\n\r\n<?php echo \"REDRED-UPLOAD-001\"; ?>\r\n------REDREDBoundary001--\r\n"
+  },
+  "response": {
+    "status_code": 201,
+    "headers": {
+      "Content-Type": "application/json; charset=UTF-8",
+      "Location": "/uploads/proof.php"
+    },
+    "body": "{\"success\":true,\"message\":\"파일 업로드 성공\",\"path\":\"/uploads/proof.php\",\"url\":\"http://192.168.94.128/uploads/proof.php\"}"
+  },
+  "baseline": {
+    "request": {
+      "method": "POST",
+      "url": "http://192.168.94.128/upload.php",
+      "path": "/upload.php",
+      "headers": {
+        "Host": "192.168.94.128",
+        "User-Agent": "REDRED-Training-Scanner/1.0",
+        "Content-Type": "multipart/form-data; boundary=----REDREDBoundarySafe",
+        "Accept": "application/json",
+        "Cookie": "PHPSESSID=demo-secret-session"
+      },
+      "parameters": {},
+    "body": "------REDREDBoundarySafe\r\nContent-Disposition: form-data; name=\"department\"\r\n\r\nmarketing\r\n------REDREDBoundarySafe\r\nContent-Disposition: form-data; name=\"file\"; filename=\"guide.txt\"\r\nContent-Type: text/plain\r\n\r\nREDRED safe upload baseline\r\n------REDREDBoundarySafe--\r\n"
+    },
+    "response": {
+      "status_code": 201,
+      "headers": {
+        "Content-Type": "application/json; charset=UTF-8",
+        "Location": "/uploads/guide.txt"
+      },
+      "body": "{\"success\":true,\"message\":\"파일 업로드 성공\",\"path\":\"/uploads/guide.txt\"}"
+    }
+  }
+}
