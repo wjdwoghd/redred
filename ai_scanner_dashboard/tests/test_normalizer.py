@@ -41,6 +41,37 @@ class NormalizerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             normalize_scan_result([])  # type: ignore[arg-type]
 
+    def test_inline_scanner_evidence_is_not_file_evidence(self):
+        result = normalize_scan_result(
+            {
+                "findings": [
+                    {
+                        "id": "F-inline",
+                        "type": "XSS",
+                        "evidence": [{"response_status": 200, "response_indicators": ["reflected"]}],
+                    }
+                ]
+            }
+        )
+        self.assertEqual(result.findings[0].evidence, [])
+
+    def test_policy_reference_is_optional_and_preserved(self):
+        result = normalize_scan_result(
+            {
+                "findings": [{
+                    "id": "F-policy",
+                    "type": "SQL_INJECTION",
+                    "policy_reference": {
+                        "policy_source": "KISA",
+                        "policy_item_name": "SQL 인젝션",
+                        "policy_item_number": 5,
+                        "inspection_criteria": ["criteria"],
+                    },
+                }]
+            }
+        )
+        self.assertEqual(result.findings[0].policy_reference["policy_item_number"], 5)
+
 
 if __name__ == "__main__":
     unittest.main()

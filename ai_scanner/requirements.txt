@@ -1,0 +1,7 @@
+pydantic>=2.7,<3.0
+python-dotenv>=1.0,<2.0
+openai>=2.0,<3.0
+pytest>=8.0,<9.0
+requests>=2.31,<3.0
+# Optional local PDF renderer. The scanner also has a dependency-free fallback.
+reportlab>=4.2,<5.0

@@ -74,6 +74,22 @@ def _int(value: Any, default: int = 0) -> int:
         return default
 
 
+def _evidence_summary(item: Mapping[str, Any], key: str) -> str | None:
+    """Create a compact readable HTTP evidence summary from scanner evidence."""
+    values: list[str] = []
+    for evidence in _list(item.get("evidence")):
+        data = _mapping(evidence)
+        if key == "request":
+            values.extend(str(value) for value in _list(data.get("request_indicators")))
+            if data.get("request_value"):
+                values.append(f"value={data['request_value']}")
+        else:
+            if data.get("response_status") is not None:
+                values.append(f"status={data['response_status']}")
+            values.extend(str(value) for value in _list(data.get("response_indicators")))
+    return "; ".join(dict.fromkeys(values)) or None
+
+
 def _severity(value: Any) -> str | None:
     text = _text(value)
     return text.upper() if text else None
@@ -111,6 +127,17 @@ def _normalize_evidence(raw: Any, finding_id: str | None = None) -> Evidence:
     )
 
 
+def _has_file_reference(raw: Any) -> bool:
+    """Whether an evidence record points to a persisted reviewer file.
+
+    Inline request/response evidence has no filename.  It belongs in the
+    Rules/HTTP evidence fields, not in the Dashboard's file evidence table.
+    """
+    item = _mapping(raw)
+    reference = _text(_first(item, "local_path", "path", "file", "filename", "name"))
+    return bool(reference and reference.casefold() not in {"unnamed", "none"})
+
+
 def _normalize_reports(raw: Any) -> ReportArtifacts:
     source = _mapping(raw)
 
@@ -142,7 +169,11 @@ def normalize_scan_result(
     target = _mapping(raw.get("target"))
     pipeline = _mapping(raw.get("pipeline"))
     summary = _mapping(_first(raw, "summary", "scan_summary", default={}))
-    top_evidence = [_normalize_evidence(item) for item in _list(raw.get("evidence"))]
+    top_evidence = [
+        _normalize_evidence(item)
+        for item in _list(raw.get("evidence"))
+        if _has_file_reference(item)
+    ]
     if discovered_evidence:
         top_evidence.extend(discovered_evidence)
 
@@ -156,15 +187,44 @@ def normalize_scan_result(
         review = _mapping(item.get("review"))
         baseline = _mapping(_first(item, "baseline_comparison", "baseline", default={}))
 
-        linked = [_normalize_evidence(ev, finding_id) for ev in _list(item.get("evidence"))]
-        for raw_ev, normalized in zip(_list(raw.get("evidence")), top_evidence, strict=False):
+        linked = [
+            _normalize_evidence(ev, finding_id)
+            for ev in _list(item.get("evidence"))
+            if _has_file_reference(ev)
+        ]
+        linked.extend(
+            _normalize_evidence(ev, finding_id)
+            for ev in _list(item.get("manual_evidence"))
+            if _has_file_reference(ev)
+        )
+        linked.extend(ev for ev in top_evidence if ev.finding_id == finding_id)
+        manual_names = {Path(ev.local_path).name for ev in linked if ev.local_path}
+        linked.extend(
+            ev for ev in (discovered_evidence or [])
+            if ev.finding_id == finding_id and ev.filename not in manual_names
+        )
+        # Some scanner versions put a finding reference in a top-level list.
+        for raw_ev in _list(raw.get("evidence")):
             raw_map = _mapping(raw_ev)
-            linked_ids = [str(x) for x in _list(raw_map.get("finding_ids"))]
-            if normalized.finding_id == finding_id or finding_id in linked_ids:
-                linked.append(normalized)
-        linked.extend(ev for ev in (discovered_evidence or []) if ev.finding_id in {None, finding_id})
+            linked_ids = {str(x) for x in _list(raw_map.get("finding_ids"))}
+            if finding_id in linked_ids:
+                if _has_file_reference(raw_ev):
+                    linked.append(_normalize_evidence(raw_ev, finding_id))
+        unique_evidence: list[Evidence] = []
+        seen_evidence: set[str] = set()
+        for evidence in linked:
+            evidence_key = f"{evidence.finding_id}:{evidence.filename}"
+            if evidence_key not in seen_evidence:
+                seen_evidence.add(evidence_key)
+                unique_evidence.append(evidence)
 
         final_severity = _severity(_first(item, "final_severity", default=review.get("final_severity")))
+        scanner_status_value = str(_first(item, "scanner_status", "status", default="")).upper()
+        if finding_id.upper().startswith("NF-") and not scanner_status_value:
+            scanner_status_value = "MANUAL"
+        review_default = review.get("status")
+        if review_default in (None, "") and scanner_status_value == "CANDIDATE":
+            review_default = "PENDING"
         findings.append(
             Finding(
                 finding_id=finding_id,
@@ -180,13 +240,16 @@ def normalize_scan_result(
                 initial_severity=_severity(_first(item, "initial_severity", "severity")),
                 final_severity=final_severity,
                 confidence=_float(_first(item, "confidence", "confidence_score")),
-                scanner_status=_text(_first(item, "scanner_status", "status"), "unknown") or "unknown",
+                scanner_status=_text(
+                    _first(item, "scanner_status", "status"),
+                    scanner_status_value.lower() if scanner_status_value else "unknown",
+                ) or (scanner_status_value.lower() if scanner_status_value else "unknown"),
                 review_status=_text(
                     _first(
                         item,
                         "review_status",
                         "verification_status",
-                        default=review.get("status"),
+                        default=review_default,
                     ),
                     "unverified",
                 ) or "unverified",
@@ -196,7 +259,7 @@ def normalize_scan_result(
                         item,
                         "request_summary",
                         "http_request_summary",
-                        default=http.get("request_summary"),
+                        default=http.get("request_summary") or _evidence_summary(item, "request"),
                     )
                 ),
                 response_summary=_text(
@@ -204,7 +267,7 @@ def normalize_scan_result(
                         item,
                         "response_summary",
                         "http_response_summary",
-                        default=http.get("response_summary"),
+                        default=http.get("response_summary") or _evidence_summary(item, "response"),
                     )
                 ),
                 baseline_comparison=dict(baseline) if baseline else None,
@@ -216,7 +279,9 @@ def normalize_scan_result(
                         default=judgment.get("scanner"),
                     )
                 ),
-                reviewer_memo=_text(_first(item, "reviewer_memo", default=review.get("memo"))),
+                reviewer_memo=_text(
+                    _first(item, "reviewer_memo", "reviewer_note", default=review.get("memo") or review.get("reviewer_note"))
+                ),
                 final_judgment=_text(
                     _first(
                         item,
@@ -230,17 +295,25 @@ def normalize_scan_result(
                     _first(item, "owasp_category", "owasp", default=classification.get("owasp"))
                 ),
                 cvss=_score(_first(item, "cvss", default=classification.get("cvss"))),
-                evidence=linked,
+                evidence=unique_evidence,
                 summary=_text(item.get("summary")),
                 impact=_text(item.get("impact")),
                 remediation=_text(item.get("remediation")),
                 secure_coding=_text(item.get("secure_coding")),
                 analyzed_at=_datetime(item.get("analyzed_at")),
+                rules_evidence=dict(_mapping(item.get("rules"))) or None,
+                ai_diagnostic_summary=_text(
+                    _first(item, "ai_reason", "diagnostic_summary", default=item.get("summary"))
+                ),
+                recommended_verification=[str(value) for value in _list(item.get("recommended_verification"))],
+                policy_reference=dict(_mapping(item.get("policy_reference"))) or None,
             )
         )
 
     reports = discovered_reports or _normalize_reports(raw.get("reports"))
     scan_id = _text(_first(raw, "scan_id", "id"), default_scan_id or "unknown-scan") or "unknown-scan"
+    scan_summary = _mapping(_first(raw, "scan_summary", "summary", default={}))
+    ai_data = _mapping(raw.get("ai"))
     return ScanResult(
         scan_id=scan_id,
         target_url=_text(
@@ -254,4 +327,12 @@ def normalize_scan_result(
         raw_result_path=raw_result_path,
         scanned_pages=_int(_first(raw, "scanned_pages", default=summary.get("scanned_pages"))),
         normal_pages=_int(_first(raw, "normal_pages", default=summary.get("normal_pages"))),
+        forms_discovered=_int(_first(raw, "forms_discovered", default=scan_summary.get("forms_discovered"))),
+        inputs_tested=_int(_first(raw, "inputs_tested", default=scan_summary.get("inputs_tested"))),
+        diagnostic_summary=_text(
+            _first(raw, "diagnostic_summary", default=ai_data.get("diagnostic_summary"))
+        ) or (
+            f"Diagnostic AI calls: {ai_data.get('diagnostic_calls')}"
+            if ai_data.get("diagnostic_calls") is not None else None
+        ),
     )

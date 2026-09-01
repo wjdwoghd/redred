@@ -1,0 +1,112 @@
+{
+  "_metadata": {
+    "policy_source": "한국인터넷진흥원(KISA), 주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드",
+    "source_url": "https://www.boho.or.kr/kr/bbs/view.do?bbsId=B0000127&categoryCode=&menuNo=205021&nttId=35988&pageIndex=1",
+    "edition_note": "KISA 보호나라에 게시된 2021.04.07 상세가이드의 Web(웹) 목차를 기준으로 작성했습니다. 공식 목차에서 확인되지 않은 별도 코드(ID)는 기재하지 않습니다.",
+    "category": "Web(웹)"
+  },
+  "SQL_INJECTION": {
+    "vulnerability_type": "SQL_INJECTION",
+    "policy_source": "한국인터넷진흥원(KISA), 주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드",
+    "policy_category": "Web(웹)",
+    "policy_item_name": "SQL 인젝션",
+    "policy_item_number": 5,
+    "policy_item_id": null,
+    "inspection_purpose": "사용자 입력이 SQL 문으로 해석되어 데이터베이스 질의의 조건이나 구조를 비정상적으로 변경할 수 있는지 확인합니다.",
+    "inspection_criteria": [
+      "SQL 문법으로 해석될 수 있는 특수문자·연산자 입력에 대한 처리 결과를 확인합니다.",
+      "정상 요청과 시험 요청의 상태 코드, 응답 길이·본문, 반환 레코드 및 오류 메시지를 비교합니다.",
+      "입력값 검증·파라미터 바인딩 등 SQL 질의와 사용자 입력의 분리 여부를 확인합니다."
+    ],
+    "current_scanner_indicators": [
+      "sql_payload_detected",
+      "sql_error_detected",
+      "response_length_difference",
+      "status_changed",
+      "record_count_difference",
+      "redirect_changed",
+      "baseline_test_response_delta"
+    ],
+    "indicator_mapping": {
+      "sql_payload_detected": "SQL 구문으로 해석될 수 있는 입력에 대한 시험 신호",
+      "sql_error_detected": "DB/SQL 오류 노출 여부 확인",
+      "baseline_test_response_delta": "정상·시험 요청 응답 차이 비교",
+      "response_length_difference": "반환 내용량 변화 비교",
+      "record_count_difference": "조회 결과 레코드 수 변화 비교"
+    },
+    "remediation_reference": [
+      "Prepared Statement 및 PDO/mysqli parameter binding",
+      "입력 형식·길이 검증과 SQL 오류 상세정보 비노출",
+      "데이터베이스 계정 최소 권한"
+    ]
+  },
+  "XSS": {
+    "vulnerability_type": "XSS",
+    "policy_source": "한국인터넷진흥원(KISA), 주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드",
+    "policy_category": "Web(웹)",
+    "policy_item_name": "크로스사이트 스크립팅",
+    "policy_item_number": 11,
+    "policy_item_id": null,
+    "inspection_purpose": "사용자 입력이 검증·인코딩 없이 웹 문맥에 삽입되어 다른 사용자의 브라우저에서 스크립트로 실행될 수 있는지 확인합니다.",
+    "inspection_criteria": [
+      "시험 입력이 응답 또는 저장 후 조회 화면에 반영되는지 확인합니다.",
+      "HTML 본문·속성·JavaScript 등 출력 문맥에 맞는 인코딩이 적용되는지 확인합니다.",
+      "반영 위치가 실제 실행 가능한 문맥인지와 Stored/Reflected 경로를 구분하여 확인합니다."
+    ],
+    "current_scanner_indicators": [
+      "input_reflected",
+      "exact_input_reflected",
+      "encoded_input_reflected",
+      "xss_executable_reflection_detected",
+      "reflection_contexts",
+      "verification_reflection"
+    ],
+    "indicator_mapping": {
+      "input_reflected": "시험 입력의 응답 반영 여부",
+      "exact_input_reflected": "인코딩되지 않은 동일 문자열 반영 여부",
+      "encoded_input_reflected": "출력 인코딩 적용 여부",
+      "xss_executable_reflection_detected": "실행 가능한 출력 문맥 여부",
+      "verification_reflection": "저장 후 조회 화면의 재반영 여부"
+    },
+    "remediation_reference": [
+      "출력 문맥별 HTML/Attribute/JavaScript Context-aware Encoding",
+      "PHP htmlspecialchars() 등 안전한 출력 처리",
+      "Content-Security-Policy(CSP)와 HttpOnly/Secure Cookie"
+    ]
+  },
+  "FILE_UPLOAD": {
+    "vulnerability_type": "FILE_UPLOAD",
+    "policy_source": "한국인터넷진흥원(KISA), 주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드",
+    "policy_category": "Web(웹)",
+    "policy_item_name": "파일 업로드",
+    "policy_item_number": 22,
+    "policy_item_id": null,
+    "inspection_purpose": "업로드 파일의 유형·내용과 저장 위치가 적절히 제한되어 악성 파일의 저장·직접 접근·실행으로 이어지지 않는지 확인합니다.",
+    "inspection_criteria": [
+      "허용 확장자, 선언 MIME 및 실제 파일 내용 검증 여부를 확인합니다.",
+      "업로드 성공 응답과 저장 경로·공개 URL의 노출 여부를 확인합니다.",
+      "저장 디렉터리가 웹에서 직접 접근되거나 스크립트 실행이 가능한지 확인합니다."
+    ],
+    "current_scanner_indicators": [
+      "upload_request_detected",
+      "dangerous_file_extension",
+      "mime_extension_mismatch",
+      "upload_success_detected",
+      "upload_path_detected",
+      "upload_verification_response"
+    ],
+    "indicator_mapping": {
+      "upload_request_detected": "Multipart 파일 업로드 기능 존재 여부",
+      "dangerous_file_extension": "위험 확장자 허용 여부",
+      "mime_extension_mismatch": "확장자·MIME 불일치 검증 여부",
+      "upload_success_detected": "업로드 처리 성공 여부",
+      "upload_path_detected": "저장 경로·공개 URL 노출 여부",
+      "upload_verification_response": "저장 파일 접근·실행 가능성 확인"
+    },
+    "remediation_reference": [
+      "Allowlist 확장자·MIME·파일 내용 검증",
+      "Web Root 외부 저장, 랜덤 파일명 및 업로드 디렉터리 실행 차단",
+      "파일 크기 제한과 직접 접근 통제"
+    ]
+  }
+}

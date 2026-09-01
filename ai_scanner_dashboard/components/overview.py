@@ -39,8 +39,10 @@ def render_kpis(metrics: DashboardMetrics, phase: str) -> None:
         ("오탐/제외", metrics.false_positives),
         ("Critical / High", metrics.critical_high),
         ("연결 증적", metrics.evidence_count),
+        ("Forms discovered", getattr(metrics, "forms_discovered", 0)),
+        ("Inputs tested", getattr(metrics, "inputs_tested", 0)),
     ]
-    for column, (label, value) in zip(st.columns(6), values, strict=True):
+    for column, (label, value) in zip(st.columns(8), values, strict=True):
         column.metric(label, value, border=True)
     if phase == "initial_completed":
         st.info("1차 결과는 취약점 후보입니다. 담당자 검토와 증적을 추가한 뒤 재분석하세요.", icon=":material/fact_check:")

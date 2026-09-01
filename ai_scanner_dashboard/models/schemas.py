@@ -18,6 +18,9 @@ class Evidence:
     uploaded_at: datetime | None = None
     mime_type: str | None = None
     size_bytes: int | None = None
+    # Dashboard-only transient bytes. Filesystem adapters persist them and do
+    # not expose them in the normalized scanner result.
+    content: bytes | None = None
 
 
 @dataclass(frozen=True)
@@ -65,6 +68,11 @@ class Finding:
     remediation: str | None = None
     secure_coding: str | None = None
     analyzed_at: datetime | None = None
+    rules_evidence: dict[str, Any] | None = None
+    ai_diagnostic_summary: str | None = None
+    recommended_verification: list[str] = field(default_factory=list)
+    # Optional KISA policy reference attached by the Scanner integration layer.
+    policy_reference: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -79,6 +87,9 @@ class ScanResult:
     raw_result_path: str | None = None
     scanned_pages: int = 0
     normal_pages: int = 0
+    forms_discovered: int = 0
+    inputs_tested: int = 0
+    diagnostic_summary: str | None = None
 
 
 @dataclass(frozen=True)
